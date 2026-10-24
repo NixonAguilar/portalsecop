@@ -8,6 +8,7 @@
  *  - Resolver la selección "Todos" consultando ambas fuentes en paralelo.
  */
 
+import { appConfig, ConfigError } from "@/config/env";
 import { MODALITY_BY_ID, STATUS_BY_ID } from "@/config/filters";
 import { toNumber } from "@/lib/format";
 import type {
@@ -20,12 +21,24 @@ import type {
   UnifiedProcess,
 } from "@/types/secop";
 
-const APP_TOKEN = import.meta.env.VITE_SOCRATA_APP_TOKEN;
+const APP_TOKEN = appConfig.socrata.appToken;
 
 const ENDPOINTS: Record<SecopSource, string> = {
-  SECOP_II: import.meta.env.VITE_SECOP_II_ENDPOINT,
-  SECOP_I: import.meta.env.VITE_SECOP_I_ENDPOINT,
+  SECOP_II: appConfig.socrata.endpoints.SECOP_II,
+  SECOP_I: appConfig.socrata.endpoints.SECOP_I,
 };
+
+/** Devuelve el endpoint validado de una fuente o lanza ConfigError amigable. */
+function endpointFor(source: SecopSource): string {
+  const url = ENDPOINTS[source];
+  if (!url) {
+    const label = source === "SECOP_II" ? "VITE_SECOP_II_ENDPOINT" : "VITE_SECOP_I_ENDPOINT";
+    throw new ConfigError(
+      `El portal no está configurado correctamente: falta o es inválida la variable ${label}.`,
+    );
+  }
+  return url;
+}
 
 /** Mapa de campos SoQL por fuente. */
 const FIELDS: Record<
@@ -145,7 +158,18 @@ async function socrataFetch<T>(endpoint: string, params: URLSearchParams): Promi
   const headers: HeadersInit = {};
   if (APP_TOKEN) headers["X-App-Token"] = APP_TOKEN;
 
-  const res = await fetch(`${endpoint}?${params.toString()}`, { headers });
+  // Construcción segura de la URL: evita barras dobles/faltantes y valida el
+  // endpoint antes de lanzar el fetch (si fuera inválido -> ConfigError claro).
+  let requestUrl: string;
+  try {
+    const url = new URL(endpoint);
+    url.search = params.toString();
+    requestUrl = url.toString();
+  } catch {
+    throw new ConfigError(`Endpoint de Socrata inválido: "${endpoint}".`);
+  }
+
+  const res = await fetch(requestUrl, { headers });
   if (!res.ok) {
     let detail = "";
     try {
@@ -168,7 +192,7 @@ async function fetchCount(source: SecopSource, filters: SearchFilters): Promise<
   if (where) params.set("$where", where);
   params.set("$select", "count(1) as total");
 
-  const rows = await socrataFetch<Array<Record<string, string>>>(ENDPOINTS[source], params);
+  const rows = await socrataFetch<Array<Record<string, string>>>(endpointFor(source), params);
   const first = rows[0];
   if (!first) return 0;
   return toNumber(Object.values(first)[0]) ?? 0;
@@ -263,10 +287,10 @@ async function fetchSource(
 ): Promise<UnifiedProcess[]> {
   const params = buildParams(source, filters, limit, offset);
   if (source === "SECOP_II") {
-    const rows = await socrataFetch<RawSecopII[]>(ENDPOINTS.SECOP_II, params);
+    const rows = await socrataFetch<RawSecopII[]>(endpointFor("SECOP_II"), params);
     return rows.map(normalizeII);
   }
-  const rows = await socrataFetch<RawSecopI[]>(ENDPOINTS.SECOP_I, params);
+  const rows = await socrataFetch<RawSecopI[]>(endpointFor("SECOP_I"), params);
   return rows.map(normalizeI);
 }
 

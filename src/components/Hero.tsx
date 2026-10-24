@@ -49,8 +49,9 @@ export function Hero(props: HeroProps) {
           </h1>
 
           <p className="mx-auto mt-5 max-w-2xl text-balance text-lg text-primary-foreground/80">
-            Busca, filtra y monitorea licitaciones, concursos y contrataciones del Estado
-            colombiano. Integramos SECOP I y SECOP II en una sola interfaz rápida y confiable.
+            <strong className="font-semibold text-white">Radar Público</strong> consolida SECOP I y
+            SECOP II en una sola plataforma para que busques, filtres y monitorees licitaciones,
+            concursos y contrataciones del Estado colombiano con datos abiertos en tiempo real.
           </p>
 
           <div className="mx-auto mt-9 max-w-2xl">

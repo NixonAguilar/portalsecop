@@ -79,7 +79,7 @@ export function HeroSearch({
             className="h-12 w-full bg-transparent text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
         </div>
-        <Button type="submit" size="lg" className="shrink-0 sm:w-auto">
+        <Button type="submit" size="lg" variant="accent" className="shrink-0 sm:w-auto">
           <Search className="h-5 w-5" />
           Buscar
         </Button>

@@ -1,4 +1,4 @@
-import { FileSearch } from "lucide-react";
+import { Radar } from "lucide-react";
 
 export function Footer() {
   return (
@@ -7,12 +7,12 @@ export function Footer() {
         <div className="md:col-span-2">
           <div className="flex items-center gap-2.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
-              <FileSearch className="h-5 w-5" />
+              <Radar className="h-5 w-5 text-emerald-300" />
             </span>
-            <span className="text-base font-extrabold">Portal de Contratación</span>
+            <span className="text-base font-extrabold">Radar Público</span>
           </div>
           <p className="mt-3 max-w-md text-sm text-primary-foreground/70">
-            Motor de búsqueda de procesos de contratación pública en Colombia. Consolida SECOP I y
+            Plataforma de inteligencia de contratación pública en Colombia. Consolida SECOP I y
             SECOP II a partir de la API de Datos Abiertos del Estado colombiano.
           </p>
         </div>
@@ -65,7 +65,7 @@ export function Footer() {
 
       <div className="border-t border-white/10">
         <div className="container flex flex-col items-center justify-between gap-2 py-5 text-xs text-primary-foreground/60 sm:flex-row">
-          <span>© {new Date().getFullYear()} Portal de Contratación. Datos de dominio público.</span>
+          <span>© {new Date().getFullYear()} Radar Público. Datos de dominio público.</span>
           <span>
             Fuente oficial:{" "}
             <a

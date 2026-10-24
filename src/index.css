@@ -4,7 +4,8 @@
 
 @layer base {
   :root {
-    --background: 210 40% 99%;
+    /* Superficies: blancos prístinos y grises muy sutiles (slate-50 / zinc-100) */
+    --background: 210 40% 98%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
@@ -13,33 +14,33 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    /* Azul institucional / marino */
-    --primary: 215 60% 23%;
+    /* Autoridad y seriedad: azul marino profundo / navy (slate-900 / blue-950) */
+    --primary: 222 47% 16%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 215 25% 95%;
-    --secondary-foreground: 215 40% 20%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 40% 18%;
 
-    --muted: 215 20% 95%;
+    --muted: 220 14% 96%;
     --muted-foreground: 215 16% 42%;
 
-    /* Acento azul medio */
-    --accent: 211 70% 46%;
-    --accent-foreground: 210 40% 98%;
+    /* Acentos / CTAs: teal para transparencia y confianza (teal-600) */
+    --accent: 174 72% 32%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Verde esmeralda para estados abiertos */
-    --success: 160 70% 36%;
+    /* Éxito / estados abiertos: esmeralda (emerald-500/600) */
+    --success: 160 84% 36%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 45%;
+    --warning: 32 90% 44%;
     --warning-foreground: 0 0% 100%;
 
     --destructive: 0 72% 46%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 215 20% 88%;
-    --input: 215 20% 88%;
-    --ring: 215 60% 23%;
+    --border: 220 13% 90%;
+    --input: 220 13% 90%;
+    --ring: 174 72% 32%;
 
     --radius: 0.65rem;
   }

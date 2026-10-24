@@ -1,8 +1,9 @@
-import { AlertTriangle, ChevronLeft, ChevronRight, SearchX } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, SearchX, SlidersHorizontal } from "lucide-react";
 
 import { ProcessCard } from "@/components/ProcessCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { isConfigError } from "@/config/env";
 import { formatInt } from "@/lib/format";
 import type { SearchResult } from "@/types/secop";
 
@@ -56,12 +57,23 @@ export function ProcessList({
   }
 
   if (isError) {
+    const configProblem = isConfigError(error);
     return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 py-16 text-center">
-        <AlertTriangle className="h-10 w-10 text-destructive" />
-        <h3 className="text-lg font-semibold text-foreground">No se pudo consultar SECOP</h3>
+      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-warning/40 bg-warning/5 py-16 text-center">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-warning/15">
+          {configProblem ? (
+            <SlidersHorizontal className="h-6 w-6 text-warning" />
+          ) : (
+            <AlertTriangle className="h-6 w-6 text-warning" />
+          )}
+        </span>
+        <h3 className="text-lg font-semibold text-foreground">
+          {configProblem ? "Error de configuración" : "No se pudo consultar los datos"}
+        </h3>
         <p className="max-w-md text-sm text-muted-foreground">
-          {error?.message ?? "Ocurrió un error al conectar con Datos Abiertos."}
+          {configProblem
+            ? `${error?.message} Revisa las variables de entorno del despliegue (VITE_SECOP_*). Si el problema persiste, contacta al administrador.`
+            : (error?.message ?? "Ocurrió un error al conectar con Datos Abiertos. Intenta de nuevo en unos segundos.")}
         </p>
       </div>
     );
