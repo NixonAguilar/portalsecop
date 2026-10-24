@@ -28,6 +28,13 @@ export default function App() {
     setPage(0);
   }, []);
 
+  // Aplica una alerta guardada (reemplaza todos los filtros de forma segura).
+  const applyFilters = useCallback((next: SearchFilters) => {
+    setFilters({ ...EMPTY_FILTERS, ...next });
+    setPage(0);
+    document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
   const scrollToResults = useCallback(() => {
     document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth" });
   }, []);
@@ -48,6 +55,7 @@ export default function App() {
           filters={filters}
           onChange={patchFilters}
           onClear={clearFilters}
+          onApplyAlert={applyFilters}
           page={page}
           onPageChange={setPage}
         />

@@ -1,3 +1,4 @@
+import { AlertsToolbar } from "@/components/alerts/AlertsToolbar";
 import { FilterDrawer, FilterPanel } from "@/components/FilterDrawer";
 import { ProcessList } from "@/components/ProcessList";
 import { PAGE_SIZE } from "@/config/filters";
@@ -10,6 +11,7 @@ interface SearchDashboardProps {
   filters: SearchFilters;
   onChange: (patch: Partial<SearchFilters>) => void;
   onClear: () => void;
+  onApplyAlert: (filters: SearchFilters) => void;
   page: number;
   onPageChange: (page: number) => void;
 }
@@ -18,6 +20,7 @@ export function SearchDashboard({
   filters,
   onChange,
   onClear,
+  onApplyAlert,
   page,
   onPageChange,
 }: SearchDashboardProps) {
@@ -50,6 +53,10 @@ export function SearchDashboard({
 
         {/* Resultados */}
         <div>
+          <div className="mb-5 flex min-h-[2.25rem] flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-bold text-foreground">Resultados</h2>
+            <AlertsToolbar filters={filters} onApply={onApplyAlert} />
+          </div>
           <ProcessList
             data={data}
             isLoading={isLoading}
