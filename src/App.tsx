@@ -5,11 +5,11 @@ import { Metrics } from "@/components/Metrics";
 import { SearchDashboard } from "@/components/SearchDashboard";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
-import { EMPTY_FILTERS } from "@/lib/filterState";
+import { createInitialFilters, EMPTY_FILTERS } from "@/lib/filterState";
 import type { SearchFilters, SourceSelection } from "@/types/secop";
 
 export default function App() {
-  const [filters, setFilters] = useState<SearchFilters>(EMPTY_FILTERS);
+  const [filters, setFilters] = useState<SearchFilters>(() => createInitialFilters());
   const [page, setPage] = useState(0);
 
   // Cualquier cambio de filtro reinicia la paginación a la primera página.
@@ -20,8 +20,9 @@ export default function App() {
 
   const clearFilters = useCallback(() => {
     setFilters((prev) => ({
-      ...EMPTY_FILTERS,
-      // Conservar fuente y texto de búsqueda al limpiar facetas.
+      // Restaura el estado base con la fecha "desde" por defecto (últimos 20 días),
+      // conservando la fuente y el texto de búsqueda.
+      ...createInitialFilters(),
       source: prev.source,
       query: prev.query,
     }));
@@ -50,7 +51,7 @@ export default function App() {
           onSourceChange={(source: SourceSelection) => patchFilters({ source })}
           onSubmit={scrollToResults}
         />
-        <Metrics />
+        <Metrics onApplyFilters={applyFilters} />
         <SearchDashboard
           filters={filters}
           onChange={patchFilters}

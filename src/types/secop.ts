@@ -115,8 +115,8 @@ export interface SearchFilters {
   modalities: string[];
   /** IDs de grupos de estado seleccionados. */
   statuses: string[];
-  /** Departamento (nombre en mayúsculas como lo guarda Socrata) o "". */
-  department: string;
+  /** Departamentos seleccionados (nombres tal como se muestran en la UI). */
+  departments: string[];
   /** Valor mínimo (COP) o null. */
   minValue: number | null;
   /** Valor máximo (COP) o null. */

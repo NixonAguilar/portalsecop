@@ -98,9 +98,10 @@ function buildWhere(source: SecopSource, filters: SearchFilters): string {
     clauses.push(values.length > 0 ? inClause(f.estado, values) : "1=0");
   }
 
-  // Departamento (case-insensitive).
-  if (filters.department) {
-    clauses.push(`upper(${f.departamento}) = upper('${escSoql(filters.department)}')`);
+  // Departamentos (multiselección, case-insensitive).
+  if (filters.departments.length > 0) {
+    const deps = filters.departments.map((d) => `'${escSoql(d.toUpperCase())}'`).join(", ");
+    clauses.push(`upper(${f.departamento}) in (${deps})`);
   }
 
   // Rango de cuantía (las columnas aceptan comparación numérica directa).
@@ -336,7 +337,7 @@ export async function fetchGlobalMetrics(): Promise<{ secopII: number; secopI: n
     query: "",
     modalities: [],
     statuses: [],
-    department: "",
+    departments: [],
     minValue: null,
     maxValue: null,
     unspsc: "",

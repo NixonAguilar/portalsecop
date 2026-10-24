@@ -46,7 +46,7 @@ export function SearchDashboard({
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[280px_1fr]">
         {/* Sidebar de filtros (desktop) */}
         <aside className="hidden lg:block">
-          <div className="sticky top-20 max-h-[calc(100vh-6rem)] rounded-xl border border-border bg-card p-4 shadow-sm">
+          <div className="sticky top-20 flex max-h-[calc(100vh-6rem)] flex-col overflow-hidden rounded-xl border border-border bg-card p-4 shadow-sm">
             <FilterPanel {...panelProps} />
           </div>
         </aside>

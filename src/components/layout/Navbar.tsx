@@ -2,9 +2,9 @@ import { LogOut, Menu, Radar, ShieldCheck, UserCircle2 } from "lucide-react";
 import { useState } from "react";
 
 import { AdminPanel } from "@/components/admin/AdminPanel";
-import { AuthModal } from "@/components/auth/AuthModal";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useAuthUI } from "@/hooks/useAuthUI";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
@@ -16,8 +16,8 @@ const LINKS = [
 
 export function Navbar() {
   const { isConfigured, loading, user, profile, isAdmin, signOut } = useAuth();
+  const { openAuth } = useAuthUI();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [authOpen, setAuthOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
 
   const displayName = profile?.full_name || user?.email || "";
@@ -41,7 +41,7 @@ export function Navbar() {
     }
     if (!user) {
       return (
-        <Button size="sm" variant="accent" onClick={() => setAuthOpen(true)}>
+        <Button size="sm" variant="accent" onClick={() => openAuth("login")}>
           Ingresar
         </Button>
       );
@@ -128,7 +128,6 @@ export function Navbar() {
         </div>
       </div>
 
-      {isConfigured && <AuthModal open={authOpen} onOpenChange={setAuthOpen} />}
       {isAdmin && <AdminPanel open={adminOpen} onOpenChange={setAdminOpen} />}
     </header>
   );
