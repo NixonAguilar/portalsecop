@@ -111,9 +111,9 @@ export interface SearchFilters {
   source: SourceSelection;
   /** Texto libre (objeto, entidad, referencia). */
   query: string;
-  /** IDs de grupos de modalidad seleccionados. */
+  /** IDs de grupos de modalidad seleccionados (ver MODALITY_GROUPS en config/filters.ts). */
   modalities: string[];
-  /** IDs de grupos de estado seleccionados. */
+  /** IDs de grupos de estado seleccionados (ver STATUS_GROUPS en config/filters.ts). */
   statuses: string[];
   /** Departamentos seleccionados (nombres tal como se muestran en la UI). */
   departments: string[];

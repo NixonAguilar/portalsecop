@@ -69,8 +69,17 @@ export const MODALITY_GROUPS: FacetGroup[] = [
     id: "contratacion-directa",
     label: "Contratación Directa",
     values: {
-      SECOP_II: ["Contratación directa", "Contratación Directa (con ofertas)"],
+      SECOP_II: ["Contratación directa"],
       SECOP_I: ["Contratación Directa (Ley 1150 de 2007)"],
+    },
+  },
+  {
+    id: "contratacion-directa-oferta",
+    label: "Contratación Directa con Oferta",
+    values: {
+      // Variante transaccional de SECOP II (no existe equivalente en SECOP I).
+      SECOP_II: ["Contratación Directa (con ofertas)"],
+      SECOP_I: [],
     },
   },
   {
@@ -85,8 +94,28 @@ export const MODALITY_GROUPS: FacetGroup[] = [
     id: "regimen-especial",
     label: "Régimen Especial",
     values: {
-      SECOP_II: ["Contratación régimen especial", "Contratación régimen especial (con ofertas)"],
+      SECOP_II: ["Contratación régimen especial"],
       SECOP_I: ["Régimen Especial"],
+    },
+  },
+  {
+    id: "regimen-especial-oferta",
+    label: "Régimen Especial con Oferta",
+    values: {
+      // Variante transaccional de SECOP II (no existe equivalente en SECOP I).
+      SECOP_II: ["Contratación régimen especial (con ofertas)"],
+      SECOP_I: [],
+    },
+  },
+  {
+    id: "solicitud-cotizacion",
+    label: "Solicitudes de Cotización",
+    values: {
+      // Nota: estos datasets no exponen un valor literal "Solicitud de
+      // Cotización"; se mapea al mecanismo de solicitud a proveedores de
+      // SECOP II, que es su equivalente operativo más cercano.
+      SECOP_II: ["Solicitud de información a los Proveedores"],
+      SECOP_I: [],
     },
   },
 ];
