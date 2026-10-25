@@ -77,10 +77,94 @@ const FIELDS: Record<
  */
 export const escSoql = (s: string | number): string => String(s).replace(/'/g, "''");
 
+/* -------------------------------------------------------------------------- */
+/* Búsqueda full-text por substring (reemplaza a $q, que solo matchea tokens  */
+/* completos). Soporta raíz léxica básica y variantes con/sin tilde para que  */
+/* "medica" encuentre MEDICAMENTOS, MÉDICOS, BIOMÉDICA, etc.                   */
+/* -------------------------------------------------------------------------- */
+
+/** Campos de texto donde se busca, por fuente. */
+const SEARCH_FIELDS: Record<SecopSource, string[]> = {
+  SECOP_II: [
+    "descripci_n_del_procedimiento",
+    "nombre_del_procedimiento",
+    "entidad",
+    "referencia_del_proceso",
+  ],
+  SECOP_I: [
+    "detalle_del_objeto_a_contratar",
+    "objeto_a_contratar",
+    "nombre_entidad",
+    "numero_de_proceso",
+  ],
+};
+
+const VOWEL_ACCENT: Record<string, string> = { A: "Á", E: "É", I: "Í", O: "Ó", U: "Ú" };
+
+/** Normaliza un token: mayúsculas y solo alfanuméricos (conserva tildes y Ñ). */
+function sanitizeSearchToken(tok: string): string {
+  return tok.toUpperCase().replace(/[^0-9A-ZÁÉÍÓÚÑ]/g, "");
+}
+
+/** Raíz léxica básica: quita plural (-s) y una vocal final en palabras largas. */
+function stemToken(w: string): string {
+  let s = w;
+  if (s.length > 4 && s.endsWith("S")) s = s.slice(0, -1);
+  if (s.length > 4 && /[AEIOUÁÉÍÓÚ]$/.test(s)) s = s.slice(0, -1);
+  return s;
+}
+
+/**
+ * Genera variantes con/sin tilde de la raíz (hasta 4), alternando el acento en
+ * las dos primeras vocales base. Así '%MEDIC%' y '%MÉDIC%' se buscan ambos.
+ */
+function accentVariants(root: string): string[] {
+  const positions: number[] = [];
+  for (let i = 0; i < root.length; i++) {
+    if (VOWEL_ACCENT[root[i]]) positions.push(i);
+    if (positions.length === 2) break;
+  }
+  if (positions.length === 0) return [root];
+  const combos: string[] = [];
+  for (let mask = 0; mask < 1 << positions.length; mask++) {
+    const chars = root.split("");
+    positions.forEach((pos, bit) => {
+      if (mask & (1 << bit)) chars[pos] = VOWEL_ACCENT[chars[pos]];
+    });
+    combos.push(chars.join(""));
+  }
+  return combos;
+}
+
+/** Construye la cláusula de búsqueda textual (LIKE multi-campo) para una fuente. */
+function buildSearchClause(source: SecopSource, query: string): string {
+  const tokens = query
+    .trim()
+    .split(/\s+/)
+    .map(sanitizeSearchToken)
+    .filter((t) => t.length >= 3);
+  if (tokens.length === 0) return "";
+
+  const fields = SEARCH_FIELDS[source];
+  // Cada token debe aparecer (AND); dentro de un token, cualquier campo/variante (OR).
+  const perToken = tokens.map((tok) => {
+    const variants = accentVariants(stemToken(tok));
+    const ors = variants.flatMap((v) =>
+      fields.map((f) => `upper(${f}) like '%${escSoql(v)}%'`),
+    );
+    return `(${ors.join(" OR ")})`;
+  });
+  return perToken.join(" AND ");
+}
+
 /** Construye la cláusula $where para una fuente concreta. */
 function buildWhere(source: SecopSource, filters: SearchFilters): string {
   const f = FIELDS[source];
   const clauses: string[] = [];
+
+  // Búsqueda textual (substring, raíz léxica y tildes).
+  const search = buildSearchClause(source, filters.query);
+  if (search) clauses.push(search);
 
   // Modalidades: expandir grupos lógicos a valores crudos de la fuente.
   if (filters.modalities.length > 0) {
@@ -143,9 +227,7 @@ function buildParams(
   const f = FIELDS[source];
   const params = new URLSearchParams();
 
-  const query = filters.query.trim();
-  if (query) params.set("$q", query);
-
+  // La búsqueda textual va dentro de $where (buildWhere), no en $q.
   const where = buildWhere(source, filters);
   if (where) params.set("$where", where);
 
@@ -187,8 +269,6 @@ async function socrataFetch<T>(endpoint: string, params: URLSearchParams): Promi
 /** Cuenta registros que cumplen el filtro (para paginación/métricas). */
 async function fetchCount(source: SecopSource, filters: SearchFilters): Promise<number> {
   const params = new URLSearchParams();
-  const query = filters.query.trim();
-  if (query) params.set("$q", query);
   const where = buildWhere(source, filters);
   if (where) params.set("$where", where);
   params.set("$select", "count(1) as total");
@@ -312,7 +392,7 @@ export async function searchProcesses(
       fetchSource(source, filters, pageSize, offset),
       fetchCount(source, filters),
     ]);
-    return { items, total, page, pageSize };
+    return { items: dedupe(items), total, page, pageSize };
   }
 
   // "Todos": repartir la página entre ambas fuentes.
@@ -326,8 +406,24 @@ export async function searchProcesses(
     fetchCount("SECOP_I", filters),
   ]);
 
-  const items = [...itemsII, ...itemsI].sort(sortByDateDesc);
+  const items = dedupe([...itemsII, ...itemsI].sort(sortByDateDesc));
   return { items, total: countII + countI, page, pageSize };
+}
+
+/**
+ * Elimina duplicados por (fuente + referencia de proceso). En SECOP I un mismo
+ * proceso puede repetirse por lotes/adiciones; aquí se colapsan.
+ */
+function dedupe(items: UnifiedProcess[]): UnifiedProcess[] {
+  const seen = new Set<string>();
+  const out: UnifiedProcess[] = [];
+  for (const it of items) {
+    const key = `${it.source}:${it.reference}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(it);
+  }
+  return out;
 }
 
 /** Totales globales por fuente (sin filtros) para la sección de métricas. */
