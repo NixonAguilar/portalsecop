@@ -285,8 +285,21 @@ async function fetchCount(source: SecopSource, filters: SearchFilters): Promise<
 
 function resolveUrl(raw: SocrataUrl | string | undefined): string | undefined {
   if (!raw) return undefined;
-  if (typeof raw === "string") return raw;
-  return raw.url;
+  const value = typeof raw === "string" ? raw : raw.url;
+  if (!value) return undefined;
+  const v = value.trim();
+  if (!v) return undefined;
+  // Fuerza https:// si viniera sin protocolo o con http antiguo.
+  if (/^https?:\/\//i.test(v)) return v.replace(/^http:\/\//i, "https://");
+  return `https://${v.replace(/^\/+/, "")}`;
+}
+
+/** Enlace canónico del expediente en SECOP I a partir del número de constancia. */
+function canonicalSecopIUrl(constancia?: string): string | undefined {
+  if (!constancia) return undefined;
+  return `https://www.contratos.gov.co/consultas/detalleProceso.do?numConstancia=${encodeURIComponent(
+    constancia.trim(),
+  )}`;
 }
 
 function normalizeII(r: RawSecopII): UnifiedProcess {
@@ -340,7 +353,9 @@ function normalizeI(r: RawSecopI): UnifiedProcess {
     contractType: r.tipo_de_contrato,
     publishedDate: r.fecha_de_cargue_en_el_secop,
     deadlineDate: r.fecha_de_firma_del_contrato,
-    url: r.ruta_proceso_en_secop_i,
+    constancia: r.numero_de_constancia,
+    // Extrae la URL del objeto Socrata; si no hay, construye el enlace canónico.
+    url: resolveUrl(r.ruta_proceso_en_secop_i) ?? canonicalSecopIUrl(r.numero_de_constancia),
     raw: r,
   };
 }

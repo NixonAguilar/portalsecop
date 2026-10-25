@@ -1,21 +1,46 @@
-import { Badge, type BadgeProps } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
-/** Mapea el estado crudo a una variante visual de badge. */
-function variantFor(status: string): BadgeProps["variant"] {
+type Kind = "active" | "awarded" | "closed" | "cancelled" | "draft" | "neutral";
+
+/** Clasifica el estado crudo en una categoría semántica. */
+function classify(status: string): Kind {
   const s = status.toLowerCase();
-  if (/(abierto|convocado|publicad|expresión|manifestaci)/.test(s)) return "success";
-  if (/(evaluaci|aprobaci|aprobado|lista corta)/.test(s)) return "accent";
-  if (/(adjudicad|seleccionad|celebrad)/.test(s)) return "default";
-  if (/(cancelad|suspendid|descartad|anormal|terminado)/.test(s)) return "destructive";
-  if (/(borrador)/.test(s)) return "secondary";
-  if (/(liquidad|finalizad)/.test(s)) return "outline";
-  return "secondary";
+  if (/(cancelad|suspendid|descartad|anormal|terminado sin|terminado anormal)/.test(s))
+    return "cancelled";
+  if (/(borrador)/.test(s)) return "draft";
+  if (/(abierto|convocad|publicad|presentaci|manifestaci|expresión|evaluaci|aprobaci|lista corta)/.test(s))
+    return "active";
+  if (/(adjudicad|seleccionad|celebrad)/.test(s)) return "awarded";
+  if (/(liquidad|finalizad)/.test(s)) return "closed";
+  return "neutral";
 }
 
-export function StatusBadge({ status }: { status: string }) {
+const STYLES: Record<Kind, string> = {
+  active: "bg-success/12 text-success",
+  awarded: "bg-slate-500/12 text-slate-600",
+  closed: "bg-slate-400/12 text-slate-500",
+  cancelled: "bg-destructive/12 text-destructive",
+  draft: "bg-warning/15 text-warning",
+  neutral: "bg-secondary text-secondary-foreground",
+};
+
+export function StatusBadge({ status, className }: { status: string; className?: string }) {
+  const kind = classify(status);
   return (
-    <Badge variant={variantFor(status)} className="font-semibold">
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold",
+        STYLES[kind],
+        className,
+      )}
+    >
+      {kind === "active" && (
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+        </span>
+      )}
       {status}
-    </Badge>
+    </span>
   );
 }

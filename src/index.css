@@ -53,6 +53,18 @@
     scroll-behavior: smooth;
   }
 
+  /* Accesibilidad (CPUX-F): respeta la preferencia de movimiento reducido. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv11", "ss01";
@@ -70,6 +82,11 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Números tabulares para cuantías alineadas */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 
   /* Scrollbar sutil para el panel de filtros */

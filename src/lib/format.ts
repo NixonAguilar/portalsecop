@@ -68,3 +68,44 @@ export function titleCase(text: string | null | undefined): string {
 export function formatInt(value: number): string {
   return new Intl.NumberFormat("es-CO").format(value);
 }
+
+/**
+ * Cuantía en COP con fallback claro cuando es 0, nula o no definida, para
+ * evitar un "$0" confuso en procesos cuyo valor va "según pliegos".
+ */
+export function formatCuantia(value: number | null | undefined): string {
+  if (value === null || value === undefined || !Number.isFinite(value) || value <= 0) {
+    return "Cuantía por definir";
+  }
+  return formatCOP(value);
+}
+
+/** Tiempo relativo humanizado en español: "Hoy", "Ayer", "Hace 3 días"… */
+export function relativeTime(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const now = new Date();
+  // Diferencia en días calendario (ignora horas).
+  const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diffDays = Math.round((startOfDay(now) - startOfDay(d)) / 86_400_000);
+
+  if (diffDays < 0) {
+    const ahead = Math.abs(diffDays);
+    if (ahead === 1) return "Mañana";
+    return `En ${ahead} días`;
+  }
+  if (diffDays === 0) return "Hoy";
+  if (diffDays === 1) return "Ayer";
+  if (diffDays < 7) return `Hace ${diffDays} días`;
+  if (diffDays < 30) {
+    const w = Math.floor(diffDays / 7);
+    return `Hace ${w} ${w === 1 ? "semana" : "semanas"}`;
+  }
+  if (diffDays < 365) {
+    const m = Math.floor(diffDays / 30);
+    return `Hace ${m} ${m === 1 ? "mes" : "meses"}`;
+  }
+  const y = Math.floor(diffDays / 365);
+  return `Hace ${y} ${y === 1 ? "año" : "años"}`;
+}

@@ -1,11 +1,13 @@
 import { AlertTriangle, ChevronLeft, ChevronRight, SearchX, SlidersHorizontal } from "lucide-react";
+import { useState } from "react";
 
 import { ProcessCard } from "@/components/ProcessCard";
+import { ProcessDrawer } from "@/components/ProcessDrawer";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isConfigError } from "@/config/env";
 import { formatInt } from "@/lib/format";
-import type { SearchResult } from "@/types/secop";
+import type { SearchResult, UnifiedProcess } from "@/types/secop";
 
 interface ProcessListProps {
   data?: SearchResult;
@@ -13,6 +15,8 @@ interface ProcessListProps {
   isFetching: boolean;
   isError: boolean;
   error?: Error | null;
+  /** Término buscado, para resaltar coincidencias. */
+  highlight: string;
   page: number;
   pageSize: number;
   onPageChange: (page: number) => void;
@@ -42,10 +46,19 @@ export function ProcessList({
   isFetching,
   isError,
   error,
+  highlight,
   page,
   pageSize,
   onPageChange,
 }: ProcessListProps) {
+  const [selected, setSelected] = useState<UnifiedProcess | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  function openProcess(p: UnifiedProcess) {
+    setSelected(p);
+    setDrawerOpen(true);
+  }
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
@@ -111,10 +124,18 @@ export function ProcessList({
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-        {items.map((p) => (
-          <ProcessCard key={p.key} process={p} />
+        {items.map((p, i) => (
+          <div
+            key={p.key}
+            className="animate-fade-in-up"
+            style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}
+          >
+            <ProcessCard process={p} highlight={highlight} onOpen={openProcess} />
+          </div>
         ))}
       </div>
+
+      <ProcessDrawer process={selected} open={drawerOpen} onOpenChange={setDrawerOpen} />
 
       <div className="flex items-center justify-center gap-3 pt-2">
         <Button

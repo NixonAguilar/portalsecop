@@ -63,6 +63,7 @@ export function SearchDashboard({
             isFetching={isFetching}
             isError={isError}
             error={error as Error | null}
+            highlight={debouncedFilters.query}
             page={page}
             pageSize={PAGE_SIZE}
             onPageChange={onPageChange}

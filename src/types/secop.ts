@@ -67,7 +67,8 @@ export interface RawSecopI {
   tipo_de_contrato?: string;
   fecha_de_cargue_en_el_secop?: string;
   fecha_de_firma_del_contrato?: string;
-  ruta_proceso_en_secop_i?: string;
+  /** Socrata entrega este campo como objeto { url } (no como string). */
+  ruta_proceso_en_secop_i?: SocrataUrl | string;
   [key: string]: unknown;
 }
 
@@ -100,6 +101,8 @@ export interface UnifiedProcess {
   phase?: string;
   publishedDate?: string;
   deadlineDate?: string;
+  /** Número de constancia (SECOP I), útil para el enlace canónico y copiar. */
+  constancia?: string;
   /** Enlace directo al proceso en SECOP. */
   url?: string;
   /** Registro crudo por si se requiere más detalle. */
